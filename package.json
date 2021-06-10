@@ -2,6 +2,17 @@
   "name": "notblog",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "repository": "https://github.com/0xhjohnson/noblog",
+  "author": {
+    "name": "Hunter Johnson",
+    "email": "0xhjohnson@pm.me",
+    "url": "https://0xhjohnson.com"
+  },
+  "bugs": {
+    "url": "https://github.com/0xhjohnson/noblog/issues",
+    "email": "0xhjohnson@pm.me"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
