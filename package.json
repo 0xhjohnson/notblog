@@ -17,7 +17,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "format": "prettier --write **/*.{js,jsx,ts,tsx,json,css,scss,md}"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.4.1",
