@@ -1,6 +1,13 @@
 import Head from 'next/head';
+import { GetStaticProps } from 'next';
+import { getAllPosts } from '@/lib/notion';
 
-export default function Home() {
+interface HomeProps {
+  posts: any; // fix this with DatabasesQueryResponse
+}
+
+function Home({ posts }: HomeProps) {
+  console.log(posts);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Head>
@@ -80,3 +87,16 @@ export default function Home() {
     </div>
   );
 }
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const posts = await getAllPosts();
+
+  return {
+    props: {
+      posts
+    },
+    revalidate: 1
+  };
+};
+
+export default Home;
