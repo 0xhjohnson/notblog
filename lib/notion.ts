@@ -9,7 +9,7 @@ export async function getAllPages() {
     return null;
   }
 
-  const res = await notion.databases.query({
+  return notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID,
     filter: {
       and: [
@@ -46,8 +46,6 @@ export async function getAllPages() {
       }
     ]
   });
-
-  return res;
 }
 
 export async function getAllPosts() {
@@ -56,7 +54,7 @@ export async function getAllPosts() {
     return null;
   }
 
-  const res = await notion.databases.query({
+  return notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID,
     filter: {
       and: [
@@ -94,6 +92,4 @@ export async function getAllPosts() {
     ],
     page_size: CONFIG.postsPerPage
   });
-
-  return res;
 }
