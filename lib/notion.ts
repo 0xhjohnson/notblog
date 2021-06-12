@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { CONFIG } from '@/config';
+import CONFIG from '@/config';
 
 const notion = new Client({ auth: process.env.NOTION_KEY });
 

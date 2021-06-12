@@ -10,7 +10,7 @@ class MyDocument extends Document {
             rel="stylesheet"
           />
         </Head>
-        <body className="antialiased font-sans overflow-hidden">
+        <body>
           <Main />
           <NextScript />
         </body>
