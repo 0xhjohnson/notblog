@@ -1,15 +1,15 @@
 export default {
-  title: '0xhjohnson — A blog by Hunter Johnson',
+  title: 'notblog',
   description:
-    'Personal blog by Hunter Johnson. Known on the internet as 0xhjohnson.',
+    'Notion powered blog built using Next.js and TailwindCSS. Fast, responsive, and easy to customize.',
   author: 'Hunter Johnson',
   email: '0xhjohnson@pm.me',
-  url: 'https://0xhjohnson.com',
+  url: 'https://notblog.vercel.app',
   lang: 'en-US',
   seo: {
     twitter: {
       cardType: 'summary_large_image',
-      site: '@0xhjohnson', // @username for the website
+      site: '@notblog', // @username for the website
       handle: '@0xhjohnson' // @username for the author
     },
     images: []
