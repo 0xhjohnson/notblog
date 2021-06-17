@@ -14,5 +14,8 @@ export default {
     },
     images: []
   },
-  postsPerPage: 10
+  postsPerPage: 10,
+  // pass a valid date format
+  // https://day.js.org/docs/en/display/format
+  dateFormat: 'MMMM D, YYYY'
 };

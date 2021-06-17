@@ -7,5 +7,11 @@ export default {
     locale: CONFIG.lang,
     images: CONFIG.seo.images
   },
-  twitter: CONFIG.seo.twitter
+  twitter: CONFIG.seo.twitter,
+  additionalLinkTags: [
+    {
+      rel: 'icon',
+      href: '/favicon.ico'
+    }
+  ]
 };

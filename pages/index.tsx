@@ -1,6 +1,9 @@
-import Head from 'next/head';
-import { GetStaticProps, InferGetStaticPropsType } from 'next';
+import Link from 'next/link';
+import dayjs from 'dayjs';
+import { NextSeo } from 'next-seo';
+import { InferGetStaticPropsType } from 'next';
 import { getAllPosts } from '@/lib/notion';
+import CONFIG from '@/config';
 import Layout from '@/components/Layout';
 
 export const getStaticProps = async () => {
@@ -10,7 +13,7 @@ export const getStaticProps = async () => {
     props: {
       posts
     },
-    revalidate: 1
+    revalidate: 10
   };
 };
 
@@ -20,69 +23,63 @@ export default function Blog({
   console.log(posts);
   return (
     <Layout>
-      <div className="flex flex-col items-center justify-center min-h-screen py-2">
-        <Head>
-          <title>Create Next App</title>
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-
-        <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-          <h1 className="text-6xl font-bold">
-            Welcome to{' '}
-            <a className="text-blue-600" href="https://nextjs.org">
-              Next.js!
-            </a>
+      <NextSeo title={CONFIG.title} description={CONFIG.description} />
+      <div className="divide-y divide-gray-200">
+        <div className="pt-6 pb-8 space-y-2 md:space-y-5">
+          <h1 className="text-3xl leading-9 font-extrabold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
+            Latest
           </h1>
-
-          <p className="mt-3 text-2xl">
-            Get started by editing{' '}
-            <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-              pages/index.js
-            </code>
+          <p className="text-lg leading-7 text-gray-500">
+            The latest posts, straight from the source.
           </p>
-
-          <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-            <a
-              href="https://nextjs.org/docs"
-              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-            >
-              <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-              <p className="mt-4 text-xl">
-                Find in-depth information about Next.js features and API.
-              </p>
-            </a>
-
-            <a
-              href="https://nextjs.org/learn"
-              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-            >
-              <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-              <p className="mt-4 text-xl">
-                Learn about Next.js in an interactive course with quizzes!
-              </p>
-            </a>
-
-            <a
-              href="https://github.com/vercel/next.js/tree/master/examples"
-              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-            >
-              <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-              <p className="mt-4 text-xl">
-                Discover and deploy boilerplate example Next.js projects.
-              </p>
-            </a>
-
-            <a
-              href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-            >
-              <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-              <p className="mt-4 text-xl">
-                Instantly deploy your Next.js site to a public URL with Vercel.
-              </p>
-            </a>
-          </div>
-        </main>
+        </div>
+        <ul className="divide-y divide-gray-200">
+          {posts?.results.map((post) => (
+            <li key={post.id} className="py-12">
+              <article className="space-y-2 xl:grid xl:grid-cols-4 xl:space-y-0 xl:items-baseline">
+                <dl>
+                  <dt className="sr-only">Published on</dt>
+                  <dd className="text-base leading-6 font-medium text-gray-500">
+                    <time dateTime={post?.properties?.date?.date?.start}>
+                      {dayjs(post?.properties?.date?.date?.start).format(
+                        CONFIG.dateFormat
+                      )}
+                    </time>
+                  </dd>
+                </dl>
+                <div className="space-y-5 xl:col-span-3">
+                  <div className="space-y-6">
+                    <h2 className="text-2xl leading-8 font-bold tracking-tight">
+                      <Link
+                        href={post?.properties?.slug?.rich_text[0]?.plain_text}
+                      >
+                        <a className="text-gray-900">
+                          {post?.properties?.title?.title[0]?.plain_text}
+                        </a>
+                      </Link>
+                    </h2>
+                    <div className="prose max-w-none text-gray-500">
+                      {/* enhance with ability to parse annotations */}
+                      {post?.properties?.summary?.rich_text[0]?.plain_text}
+                    </div>
+                  </div>
+                  <div className="text-base leading-6 font-medium">
+                    <Link
+                      href={post?.properties?.slug?.rich_text[0]?.plain_text}
+                    >
+                      <a
+                        className="text-pink-500 hover:text-pink-600"
+                        aria-label={`Read "${post?.properties?.title?.title[0]?.plain_text}"`}
+                      >
+                        Read more &rarr;
+                      </a>
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
       </div>
     </Layout>
   );
