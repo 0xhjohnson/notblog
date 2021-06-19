@@ -1,3 +1,9 @@
+export interface PostPreviewResponse {
+  hasMore: boolean;
+  nextCursor: string;
+  results: PostPreview[];
+}
+
 export interface PostPreview {
   id: string;
   date: string;

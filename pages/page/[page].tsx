@@ -1,20 +1,21 @@
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import { NextSeo } from 'next-seo';
-import { GetStaticProps } from 'next';
+import { GetStaticProps, GetStaticPaths } from 'next';
+import { ParsedUrlQuery } from 'querystring';
 import { getAllPostPreviews } from '@/lib/notion';
 import { PostPreviewResponse } from '@/types';
 import CONFIG from '@/config';
 import Layout from '@/components/Layout';
 import Pagination from '@/components/Pagination';
 
-interface BlogProps {
+interface PageProps {
   postPreviews: PostPreviewResponse[];
   page: number;
 }
 
-export default function Blog({ postPreviews, page }: BlogProps) {
-  const latestPostPreviews = postPreviews[page];
+export default function Page({ postPreviews, page }: PageProps) {
+  const pagePostPreviews = postPreviews[page];
 
   return (
     <Layout>
@@ -29,7 +30,7 @@ export default function Blog({ postPreviews, page }: BlogProps) {
           </p>
         </div>
         <ul className="divide-y divide-gray-200">
-          {latestPostPreviews?.results.map((post) => (
+          {pagePostPreviews?.results.map((post) => (
             <li key={post.id} className="py-12">
               <article className="space-y-2 xl:grid xl:grid-cols-4 xl:space-y-0 xl:items-baseline">
                 <dl>
@@ -70,20 +71,39 @@ export default function Blog({ postPreviews, page }: BlogProps) {
             </li>
           ))}
         </ul>
-        <Pagination page={page} hasMore={latestPostPreviews.hasMore} />
+        <Pagination page={page} hasMore={pagePostPreviews.hasMore} />
       </div>
     </Layout>
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+interface Params extends ParsedUrlQuery {
+  page: string;
+}
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { page } = context.params as Params;
   const postPreviews = await getAllPostPreviews();
 
   return {
     props: {
       postPreviews,
-      page: 0
+      page: Number(page)
     },
     revalidate: 10
+  };
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const postPreviews = await getAllPostPreviews();
+  const pageCount = postPreviews ? postPreviews.length : 1;
+
+  return {
+    paths: [...Array(pageCount - 1)].map((page, idx) => ({
+      params: {
+        page: String(idx + 2)
+      }
+    })),
+    fallback: true
   };
 };

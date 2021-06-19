@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { Client, APIResponseError, APIErrorCode } from '@notionhq/client';
-import { PropertyValue } from '@notionhq/client/build/src/api-types';
+import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
+import { PostPreview } from '@/types';
 import CONFIG from '@/config';
 
 const notion = new Client({ auth: process.env.NOTION_KEY });
@@ -20,6 +21,18 @@ function extractValueToString(property: PropertyValue): string | null {
     default:
       return '';
   }
+}
+
+function normalizeResults(results: Page[]) {
+  return results.map((post) =>
+    Object.fromEntries([
+      ...Object.entries(post.properties).map(([key, value]) => [
+        key,
+        extractValueToString(value)
+      ]),
+      ['id', post.id]
+    ])
+  );
 }
 
 export async function getAllPages() {
@@ -67,14 +80,14 @@ export async function getAllPages() {
   });
 }
 
-export async function getAllPostPreviews() {
+async function getPostPreview(startCursor: string | undefined = undefined) {
   if (!process.env.NOTION_DATABASE_ID) {
     console.error('Notion database ID must be provided in .env file');
     return null;
   }
 
   try {
-    const postsRes = await notion.databases.query({
+    const res = await notion.databases.query({
       database_id: process.env.NOTION_DATABASE_ID,
       filter: {
         and: [
@@ -110,18 +123,17 @@ export async function getAllPostPreviews() {
           direction: 'descending'
         }
       ],
+      start_cursor: startCursor,
       page_size: CONFIG.postsPerPage
     });
 
-    return postsRes.results.map((post) =>
-      Object.fromEntries([
-        ...Object.entries(post.properties).map(([key, value]) => [
-          key,
-          extractValueToString(value)
-        ]),
-        ['id', post.id]
-      ])
-    );
+    const results: PostPreview[] = normalizeResults(res.results);
+
+    return {
+      hasMore: res.has_more,
+      nextCursor: res.next_cursor,
+      results
+    };
   } catch (error: unknown) {
     if (APIResponseError.isAPIResponseError(error)) {
       switch (error.code) {
@@ -136,4 +148,37 @@ export async function getAllPostPreviews() {
       }
     }
   }
+}
+
+export async function getAllPostPreviews() {
+  const allPostPreviews = [];
+
+  // fetch the first page of post previews
+  const postPreview = await getPostPreview();
+  // early exit if there are no posts
+  if (!postPreview) {
+    return [];
+  }
+
+  allPostPreviews.push(postPreview);
+
+  let hasMore = postPreview.hasMore;
+  let nextCursor = postPreview.nextCursor || undefined;
+
+  // continue fetching if there are more pages
+  while (hasMore) {
+    const nextPostPreview = await getPostPreview(nextCursor);
+    if (!nextPostPreview) {
+      break;
+    }
+
+    nextCursor = nextPostPreview.nextCursor || undefined;
+    allPostPreviews.push(nextPostPreview);
+
+    if (!nextPostPreview.hasMore) {
+      hasMore = false;
+    }
+  }
+
+  return allPostPreviews;
 }
