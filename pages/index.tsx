@@ -9,13 +9,11 @@ import Layout from '@/components/Layout';
 import Pagination from '@/components/Pagination';
 
 interface BlogProps {
-  postPreviews: PostPreviewResponse[];
+  postPreviews: PostPreviewResponse;
   page: number;
 }
 
 export default function Blog({ postPreviews, page }: BlogProps) {
-  const latestPostPreviews = postPreviews[page];
-
   return (
     <Layout>
       <NextSeo title={CONFIG.title} description={CONFIG.description} />
@@ -29,7 +27,7 @@ export default function Blog({ postPreviews, page }: BlogProps) {
           </p>
         </div>
         <ul className="divide-y divide-gray-200">
-          {latestPostPreviews?.results.map((post) => (
+          {postPreviews?.results.map((post) => (
             <li key={post.id} className="py-12">
               <article className="space-y-2 xl:grid xl:grid-cols-4 xl:space-y-0 xl:items-baseline">
                 <dl>
@@ -70,7 +68,7 @@ export default function Blog({ postPreviews, page }: BlogProps) {
             </li>
           ))}
         </ul>
-        <Pagination page={page} hasMore={latestPostPreviews.hasMore} />
+        <Pagination page={page} hasMore={postPreviews.hasMore} />
       </div>
     </Layout>
   );
@@ -78,11 +76,12 @@ export default function Blog({ postPreviews, page }: BlogProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const postPreviews = await getAllPostPreviews();
+  const page = 0;
 
   return {
     props: {
-      postPreviews,
-      page: 0
+      postPreviews: postPreviews[page],
+      page: page
     },
     revalidate: 10
   };

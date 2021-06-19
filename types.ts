@@ -1,6 +1,6 @@
 export interface PostPreviewResponse {
   hasMore: boolean;
-  nextCursor: string;
+  nextCursor?: string;
   results: PostPreview[];
 }
 

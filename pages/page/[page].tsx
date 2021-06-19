@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import dayjs from 'dayjs';
+import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { GetStaticProps, GetStaticPaths } from 'next';
 import { ParsedUrlQuery } from 'querystring';
@@ -10,12 +11,16 @@ import Layout from '@/components/Layout';
 import Pagination from '@/components/Pagination';
 
 interface PageProps {
-  postPreviews: PostPreviewResponse[];
+  postPreviews: PostPreviewResponse;
   page: number;
 }
 
 export default function Page({ postPreviews, page }: PageProps) {
-  const pagePostPreviews = postPreviews[page];
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Layout>
@@ -30,7 +35,7 @@ export default function Page({ postPreviews, page }: PageProps) {
           </p>
         </div>
         <ul className="divide-y divide-gray-200">
-          {pagePostPreviews?.results.map((post) => (
+          {postPreviews?.results.map((post) => (
             <li key={post.id} className="py-12">
               <article className="space-y-2 xl:grid xl:grid-cols-4 xl:space-y-0 xl:items-baseline">
                 <dl>
@@ -71,7 +76,7 @@ export default function Page({ postPreviews, page }: PageProps) {
             </li>
           ))}
         </ul>
-        <Pagination page={page} hasMore={pagePostPreviews.hasMore} />
+        <Pagination page={page} hasMore={postPreviews.hasMore} />
       </div>
     </Layout>
   );
@@ -81,13 +86,13 @@ interface Params extends ParsedUrlQuery {
   page: string;
 }
 
-export const getStaticProps: GetStaticProps = async (context) => {
-  const { page } = context.params as Params;
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { page } = params as Params;
   const postPreviews = await getAllPostPreviews();
 
   return {
     props: {
-      postPreviews,
+      postPreviews: postPreviews[Number(page)],
       page: Number(page)
     },
     revalidate: 10
