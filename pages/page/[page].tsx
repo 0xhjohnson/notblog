@@ -99,9 +99,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const pageCount = postPreviews ? postPreviews.length : 1;
 
   return {
-    paths: [...Array(pageCount - 1)].map((page, idx) => ({
+    paths: [...Array(pageCount - 1)].map((_, idx) => ({
       params: {
-        page: String(idx + 2)
+        page: String(idx + 1)
       }
     })),
     fallback: true
