@@ -11,9 +11,16 @@ import Pagination from '@/components/Pagination';
 interface BlogProps {
   postPreviews: PostPreviewResponse;
   page: number;
+  canPreviousPage: boolean;
+  pageCount: number;
 }
 
-export default function Blog({ postPreviews, page }: BlogProps) {
+export default function Blog({
+  postPreviews,
+  page,
+  canPreviousPage,
+  pageCount
+}: BlogProps) {
   return (
     <Layout>
       <NextSeo title={CONFIG.title} description={CONFIG.description} />
@@ -68,7 +75,14 @@ export default function Blog({ postPreviews, page }: BlogProps) {
             </li>
           ))}
         </ul>
-        <Pagination page={page} hasMore={postPreviews.hasMore} />
+        <div className="pb-4">
+          <Pagination
+            page={page}
+            canPreviousPage={canPreviousPage}
+            canNextPage={postPreviews.hasMore}
+            pageCount={pageCount}
+          />
+        </div>
       </div>
     </Layout>
   );
@@ -76,12 +90,14 @@ export default function Blog({ postPreviews, page }: BlogProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const postPreviews = await getAllPostPreviews();
-  const page = 0;
+  const page = 1;
 
   return {
     props: {
-      postPreviews: postPreviews[page],
-      page: page
+      postPreviews: postPreviews[page - 1],
+      page: page,
+      canPreviousPage: false,
+      pageCount: postPreviews.length
     },
     revalidate: 10
   };

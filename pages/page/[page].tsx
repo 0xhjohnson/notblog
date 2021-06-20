@@ -13,9 +13,16 @@ import Pagination from '@/components/Pagination';
 interface PageProps {
   postPreviews: PostPreviewResponse;
   page: number;
+  canPreviousPage: boolean;
+  pageCount: number;
 }
 
-export default function Page({ postPreviews, page }: PageProps) {
+export default function Page({
+  postPreviews,
+  page,
+  canPreviousPage,
+  pageCount
+}: PageProps) {
   const router = useRouter();
 
   if (router.isFallback) {
@@ -24,7 +31,10 @@ export default function Page({ postPreviews, page }: PageProps) {
 
   return (
     <Layout>
-      <NextSeo title={CONFIG.title} description={CONFIG.description} />
+      <NextSeo
+        title={`${CONFIG.title} — page ${page}`}
+        description={CONFIG.description}
+      />
       <div className="divide-y divide-gray-200">
         <div className="pt-6 pb-8 space-y-2 md:space-y-5">
           <h1 className="text-3xl leading-9 font-extrabold text-gray-900 tracking-tight sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
@@ -76,7 +86,14 @@ export default function Page({ postPreviews, page }: PageProps) {
             </li>
           ))}
         </ul>
-        <Pagination page={page} hasMore={postPreviews.hasMore} />
+        <div className="pb-4">
+          <Pagination
+            page={page}
+            canPreviousPage={canPreviousPage}
+            canNextPage={postPreviews.hasMore}
+            pageCount={pageCount}
+          />
+        </div>
       </div>
     </Layout>
   );
@@ -92,8 +109,10 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   return {
     props: {
-      postPreviews: postPreviews[Number(page)],
-      page: Number(page)
+      postPreviews: postPreviews[Number(page) - 1],
+      page: Number(page),
+      canPreviousPage: true,
+      pageCount: postPreviews.length
     },
     revalidate: 10
   };
@@ -106,7 +125,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: [...Array(pageCount - 1)].map((_, idx) => ({
       params: {
-        page: String(idx + 1)
+        // ignore the first page and account for index by 0
+        page: String(idx + 2)
       }
     })),
     fallback: true

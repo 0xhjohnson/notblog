@@ -35,7 +35,7 @@ function normalizeResults(results: Page[]) {
   );
 }
 
-async function getPostPreview(startCursor: string | undefined = undefined) {
+async function getPostPreview(startCursor?: string) {
   if (!process.env.NOTION_DATABASE_ID) {
     console.error('Notion database ID must be provided in .env file');
     return null;
