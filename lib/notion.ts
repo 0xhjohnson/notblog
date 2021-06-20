@@ -35,56 +35,13 @@ function normalizeResults(results: Page[]) {
   );
 }
 
-export async function getAllPages() {
-  if (!process.env.NOTION_DATABASE_ID) {
-    console.error('Notion database ID must be provided in .env file');
-    return null;
-  }
-
-  return notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID,
-    filter: {
-      and: [
-        {
-          property: 'title',
-          text: {
-            is_not_empty: true
-          }
-        },
-        {
-          property: 'slug',
-          text: {
-            is_not_empty: true
-          }
-        },
-        {
-          property: 'status',
-          select: {
-            equals: 'Published'
-          }
-        },
-        {
-          property: 'type',
-          select: {
-            equals: 'Page'
-          }
-        }
-      ]
-    },
-    sorts: [
-      {
-        property: 'date',
-        direction: 'descending'
-      }
-    ]
-  });
-}
-
 async function getPostPreview(startCursor: string | undefined = undefined) {
   if (!process.env.NOTION_DATABASE_ID) {
     console.error('Notion database ID must be provided in .env file');
     return null;
   }
+
+  let postPreview;
 
   try {
     const res = await notion.databases.query({
@@ -129,7 +86,7 @@ async function getPostPreview(startCursor: string | undefined = undefined) {
 
     const results: PostPreview[] = normalizeResults(res.results);
 
-    return {
+    postPreview = {
       hasMore: res.has_more,
       nextCursor: res.next_cursor,
       results
@@ -139,15 +96,17 @@ async function getPostPreview(startCursor: string | undefined = undefined) {
       switch (error.code) {
         case APIErrorCode.Unauthorized:
           console.error(
-            'Unable to authorize access to Notion using supplied NOTION_KEY'
+            `Unable to authorize access to Notion using supplied NOTION_KEY
+            Double check your .env file`
           );
-          console.error('Double check your .env file');
           break;
         default:
           console.error('Something went wrong, unhandled error');
       }
     }
   }
+
+  return postPreview;
 }
 
 export async function getAllPostPreviews() {
