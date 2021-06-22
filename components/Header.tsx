@@ -58,7 +58,7 @@ export default function Header() {
             <>
               {item.isExternal ? (
                 <a
-                  rel="noopener"
+                  rel="noopener noreferrer"
                   target="_blank"
                   href={item.href}
                   key={item.href}
