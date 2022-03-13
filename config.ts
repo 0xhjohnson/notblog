@@ -1,4 +1,4 @@
-export default {
+const CONFIG = {
   title: 'notblog',
   description:
     'Notion powered blog built using Next.js and TailwindCSS. Fast, responsive, and easy to customize.',
@@ -19,3 +19,5 @@ export default {
   // https://day.js.org/docs/en/display/format
   dateFormat: 'MMMM D, YYYY'
 };
+
+export default CONFIG;

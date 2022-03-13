@@ -1,62 +1,59 @@
-import dayjs from 'dayjs';
-import { Client, APIResponseError, APIErrorCode } from '@notionhq/client';
-import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
-import { PostPreview } from '@/types';
+import { APIErrorCode, Client, isNotionClientError } from '@notionhq/client';
 import CONFIG from '@/config';
+import {
+  isFullPage,
+  richTextAsPlainText,
+  getProperty
+} from '@jitl/notion-api/src/lib/notion-api';
+import { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
 
 const notion = new Client({ auth: process.env.NOTION_KEY });
 
-function extractValueToString(property: PropertyValue): string | null {
-  switch (property.type) {
-    case 'date':
-      return dayjs(property.date.start).format(CONFIG.dateFormat);
-    case 'rich_text':
-      return property.rich_text.map((t) => t.plain_text).join('');
-    case 'title':
-      return property.title.map((t) => t.plain_text).join('');
-    case 'select':
-      return property.select.name;
-    case 'multi_select':
-      return property.multi_select.map((select) => select.name).join(', ');
-    default:
-      return '';
+export function getPageProperty(
+  propertyName: string,
+  page: QueryDatabaseResponse['results'][number]
+) {
+  if (isFullPage(page)) {
+    const property = getProperty(page, { name: propertyName });
+    if (!property) {
+      return null;
+    }
+
+    switch (property.type) {
+      case 'rich_text':
+        return richTextAsPlainText(property.rich_text);
+      case 'title':
+        return richTextAsPlainText(property.title);
+      case 'date':
+        return property?.date?.start;
+      default:
+        console.error(`unhandled property of type: ${property.type}`);
+    }
   }
 }
 
-function normalizeResults(results: Page[]) {
-  return results.map((post) =>
-    Object.fromEntries([
-      ...Object.entries(post.properties).map(([key, value]) => [
-        key,
-        extractValueToString(value)
-      ]),
-      ['id', post.id]
-    ])
-  );
-}
-
-async function getPostPreview(startCursor?: string) {
+async function getPosts(startCursor?: string) {
   if (!process.env.NOTION_DATABASE_ID) {
     console.error('Notion database ID must be provided in .env file');
     return null;
   }
 
-  let postPreview;
+  let response;
 
   try {
-    const res = await notion.databases.query({
+    response = await notion.databases.query({
       database_id: process.env.NOTION_DATABASE_ID,
       filter: {
         and: [
           {
             property: 'title',
-            text: {
+            title: {
               is_not_empty: true
             }
           },
           {
             property: 'slug',
-            text: {
+            rich_text: {
               is_not_empty: true
             }
           },
@@ -84,20 +81,14 @@ async function getPostPreview(startCursor?: string) {
       page_size: CONFIG.postsPerPage
     });
 
-    const results: PostPreview[] = normalizeResults(res.results);
-
-    postPreview = {
-      hasMore: res.has_more,
-      nextCursor: res.next_cursor,
-      results
-    };
+    response.results.filter((post) => isFullPage(post));
   } catch (error: unknown) {
-    if (APIResponseError.isAPIResponseError(error)) {
+    if (isNotionClientError(error)) {
       switch (error.code) {
         case APIErrorCode.Unauthorized:
           console.error(
-            `Unable to authorize access to Notion using supplied NOTION_KEY
-            Double check your .env file`
+            `Unable to authorize access to Notion using supplied NOTION_KEY:
+            Double check your .env.local file or create if you haven't already`
           );
           break;
         default:
@@ -106,38 +97,35 @@ async function getPostPreview(startCursor?: string) {
     }
   }
 
-  return postPreview;
+  return response;
 }
 
-export async function getAllPostPreviews() {
-  const allPostPreviews = [];
+export async function getAllPosts() {
+  const allPosts = [];
 
-  // fetch the first page of post previews
-  const postPreview = await getPostPreview();
-  // early exit if there are no posts
-  if (!postPreview) {
+  const latestPosts = await getPosts();
+  if (!latestPosts) {
     return [];
   }
 
-  allPostPreviews.push(postPreview);
+  allPosts.push(latestPosts);
 
-  let hasMore = postPreview.hasMore;
-  let nextCursor = postPreview.nextCursor || undefined;
+  let hasMore = latestPosts.has_more;
+  let nextCursor = latestPosts.next_cursor ?? undefined;
 
-  // continue fetching if there are more pages
   while (hasMore) {
-    const nextPostPreview = await getPostPreview(nextCursor);
-    if (!nextPostPreview) {
+    const morePosts = await getPosts(nextCursor);
+    if (!morePosts) {
       break;
     }
 
-    nextCursor = nextPostPreview.nextCursor || undefined;
-    allPostPreviews.push(nextPostPreview);
+    allPosts.push(morePosts);
 
-    if (!nextPostPreview.hasMore) {
+    nextCursor = morePosts.next_cursor ?? undefined;
+    if (!morePosts.has_more) {
       hasMore = false;
     }
   }
 
-  return allPostPreviews;
+  return allPosts;
 }

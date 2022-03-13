@@ -3,15 +3,14 @@ const colors = require('tailwindcss/colors');
 
 module.exports = {
   mode: 'jit',
-  purge: ['./pages/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
-  darkMode: false,
+  content: ['./pages/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     colors: {
       transparent: 'transparent',
       current: 'currentColor',
       black: colors.black,
       white: colors.white,
-      gray: colors.coolGray,
+      gray: colors.gray,
       pink: colors.pink,
       blue: colors.blue,
       green: colors.emerald,
@@ -24,9 +23,6 @@ module.exports = {
         sans: ['Inter', ...defaultTheme.fontFamily.sans]
       }
     }
-  },
-  variants: {
-    extend: {}
   },
   plugins: [require('@tailwindcss/typography')]
 };

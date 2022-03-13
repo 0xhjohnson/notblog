@@ -1,26 +1,18 @@
-import Link from 'next/link';
-import dayjs from 'dayjs';
 import { NextSeo } from 'next-seo';
 import { GetStaticProps } from 'next';
-import { getAllPostPreviews } from '@/lib/notion';
-import { PostPreviewResponse } from '@/types';
+import { getAllPosts } from '@/lib/notion';
 import CONFIG from '@/config';
 import Layout from '@/components/Layout';
 import Pagination from '@/components/Pagination';
+import { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
+import PostPreview from '@/components/PostPreview';
 
 interface BlogProps {
-  postPreviews: PostPreviewResponse;
-  page: number;
-  canPreviousPage: boolean;
+  latestPosts: QueryDatabaseResponse;
   pageCount: number;
 }
 
-export default function Blog({
-  postPreviews,
-  page,
-  canPreviousPage,
-  pageCount
-}: BlogProps) {
+export default function Blog({ latestPosts, pageCount }: BlogProps) {
   return (
     <Layout>
       <NextSeo title={CONFIG.title} description={CONFIG.description} />
@@ -34,52 +26,15 @@ export default function Blog({
           </p>
         </div>
         <ul className="divide-y divide-gray-200">
-          {postPreviews?.results.map((post) => (
-            <li key={post.id} className="py-12">
-              <article className="space-y-2 xl:grid xl:grid-cols-4 xl:space-y-0 xl:items-baseline">
-                <dl>
-                  <dt className="sr-only">Published on</dt>
-                  <dd className="text-base leading-6 font-medium text-gray-500">
-                    <time
-                      dateTime={dayjs(post.date, CONFIG.dateFormat).format(
-                        'YYYY-MM-DD'
-                      )}
-                    >
-                      {post.date}
-                    </time>
-                  </dd>
-                </dl>
-                <div className="space-y-5 xl:col-span-3">
-                  <div className="space-y-6">
-                    <h2 className="text-2xl leading-8 font-bold tracking-tight">
-                      <Link href={`/${post.slug}`}>
-                        <a className="text-gray-900">{post.title}</a>
-                      </Link>
-                    </h2>
-                    <div className="prose max-w-none text-gray-500">
-                      {post.summary}
-                    </div>
-                  </div>
-                  <div className="text-base leading-6 font-medium">
-                    <Link href={`/${post.slug}`}>
-                      <a
-                        className="text-pink-500 hover:text-pink-600"
-                        aria-label={`Read "${post.title}"`}
-                      >
-                        Read more &rarr;
-                      </a>
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            </li>
+          {latestPosts?.results.map((post) => (
+            <PostPreview key={post.id} post={post} />
           ))}
         </ul>
         <div className="pb-4">
           <Pagination
-            page={page}
-            canPreviousPage={canPreviousPage}
-            canNextPage={postPreviews.hasMore}
+            page={1}
+            canPreviousPage={false}
+            canNextPage={latestPosts.has_more}
             pageCount={pageCount}
           />
         </div>
@@ -89,15 +44,13 @@ export default function Blog({
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const postPreviews = await getAllPostPreviews();
-  const page = 1;
+  const posts = await getAllPosts();
+  const latestPosts = posts.at(0);
 
   return {
     props: {
-      postPreviews: postPreviews[page - 1],
-      page: page,
-      canPreviousPage: false,
-      pageCount: postPreviews.length
+      latestPosts,
+      pageCount: posts.length
     },
     revalidate: 10
   };
