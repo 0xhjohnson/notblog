@@ -45,7 +45,7 @@ export default function Blog({ latestPosts, pageCount }: BlogProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const posts = await getAllPosts();
-  const latestPosts = posts.at(0);
+  const latestPosts = posts[0];
 
   return {
     props: {

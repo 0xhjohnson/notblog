@@ -66,7 +66,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   return {
     props: {
-      posts: posts.at(Number(page) - 1),
+      posts: posts[Number(page) - 1],
       page: Number(page),
       pageCount: posts.length
     },
@@ -79,10 +79,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const pageCount = posts ? posts.length : 1;
 
   return {
-    paths: [...Array(pageCount - 1)].map((_, idx) => ({
+    paths: Array.from({ length: pageCount }, (_, i) => ({
       params: {
-        // ignore the first page and account for index by 0
-        page: String(idx + 2)
+        page: String(i + 1)
       }
     })),
     fallback: true
