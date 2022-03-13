@@ -17,7 +17,7 @@ export default function ActiveLink({ children, href }: Props) {
         className={clsx(
           'font-medium',
           router.pathname === href
-            ? 'text-gray-900 dark:text-gray-100'
+            ? 'text-gray-900'
             : 'text-gray-500 hover:text-gray-900'
         )}
       >
