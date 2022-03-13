@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Transition } from '@headlessui/react';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import ActiveLink from '@/components/ActiveLink';
@@ -13,8 +14,6 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Blog', href: '/', isExternal: false },
-  { label: 'Search', href: '/search', isExternal: false },
-  { label: 'RSS', href: '/feed', isExternal: false },
   {
     label: 'Source',
     href: 'https://github.com/0xhjohnson/notblog',
@@ -32,18 +31,17 @@ export default function Header() {
   return (
     <header>
       <div className="flex justify-between items-center py-10">
-        <div className="flex-1">
-          <Link href="/">
-            <a aria-label="Blog">
-              <img src="/logo.svg" alt="Logo" className="h-6 sm:hidden" />
-              <img
-                src="/wide-logo.svg"
-                alt="Full width logo"
-                className="hidden sm:block h-6"
-              />
-            </a>
-          </Link>
-        </div>
+        <Link href="/">
+          <a aria-label="Blog" className="w-8 sm:w-32 h-6 relative">
+            <div className="sm:hidden">
+              <Image src="/logo.svg" alt="Logo" layout="fill" />
+            </div>
+            <div className="hidden sm:block">
+              <Image src="/wide-logo.svg" alt="Full width logo" layout="fill" />
+            </div>
+          </a>
+        </Link>
+        <div className="w-full"></div>
         <div className="-mr-2 -my-2 sm:hidden">
           <button
             className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"
@@ -88,7 +86,9 @@ export default function Header() {
         <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
           <div className="pt-5 pb-6 px-5">
             <div className="flex items-center justify-between">
-              <img src="/logo.svg" alt="Logo" className="h-6" />
+              <div className="w-8 h-6 relative">
+                <Image src="/logo.svg" alt="Logo" layout="fill" />
+              </div>
               <div className="-mr-2">
                 <button
                   className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"

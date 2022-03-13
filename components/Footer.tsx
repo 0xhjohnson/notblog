@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import CONFIG from '@/config';
 
 export default function Footer() {
