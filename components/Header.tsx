@@ -53,7 +53,7 @@ export default function Header() {
         </div>
         <nav className="hidden sm:flex space-x-6">
           {navItems.map((item) => (
-            <>
+            <div key={item.href}>
               {item.isExternal ? (
                 <a
                   rel="noopener noreferrer"
@@ -69,7 +69,7 @@ export default function Header() {
                   {item.label}
                 </ActiveLink>
               )}
-            </>
+            </div>
           ))}
         </nav>
       </div>

@@ -1,6 +1,6 @@
 import CONFIG from '@/config';
 
-export default {
+const SEO = {
   openGraph: {
     url: CONFIG.url,
     type: 'website',
@@ -15,3 +15,5 @@ export default {
     }
   ]
 };
+
+export default SEO;
